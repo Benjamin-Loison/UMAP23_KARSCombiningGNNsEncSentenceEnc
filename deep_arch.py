@@ -6,6 +6,10 @@ import pickle
 import os
 from tensorflow import keras
 
+METRICS = ['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.F1Score()]
+OPTIMIZER = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9)
+LOSS = 'binary_crossentropy'
+
 # this function loads data (embeddings) to be trained/test in a unique matrix X
 # whose values are then fitted by the deep model
 def matching_graph_bert_ids(users, items, ratings, graph_embs, word_embs):
@@ -145,7 +149,7 @@ def model_entity_based(X,y,dim_embeddings,epochs,batch_size):
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense3)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9), metrics=['accuracy'])
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
   
   return model
@@ -205,7 +209,7 @@ def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, 
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(merged5)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9), metrics=['accuracy'])
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
   
   return model
@@ -216,14 +220,15 @@ def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, 
 # where id is an integer
 # embedding is a list of float or numpy.array
 
-source_graph_path = 'path/to/graph_emb.pickle'
-source_text_path = 'path/to/word_emb.pickle'
-model_path = 'path/to/model.h5'
-predictions_path = 'path/to/predictions'
+dataset = 'movielens'
+source_graph_path = f'{dataset}/{dataset}_CompGCN_k=384.pickle'
+source_text_path = f'{dataset}/{dataset}_sota_minilm-l12-v1.pickle'
+model_path = f'{dataset}/model.h5'
+predictions_path = f'{dataset}/predictions'
 
 
 # read training data
-users, items, ratings = read_ratings('path/to/train.tsv')
+users, items, ratings = read_ratings(f'{dataset}/train.tsv')
 
 # read graph and word embedding
 graph_emb = pickle.load(open(source_graph_path, 'rb'))
@@ -249,7 +254,7 @@ else:
   recsys_model.save(model_path)
 
 # read test ratings to be predicted
-users, items, ratings = read_ratings('path/to/test.tsv')
+users, items, ratings = read_ratings(f'{dataset}/test.tsv')
 
 # embeddings for test
 X, y, dim_embeddings, nu, ni, nr = matching_graph_bert_ids(users, items, ratings, graph_emb, word_emb)
