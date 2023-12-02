@@ -155,6 +155,55 @@ def model_entity_based(X,y,dim_embeddings,epochs,batch_size):
   return model
 
 
+def model_feature_based(X,y,dim_embeddings,epochs,batch_size):
+
+  model = keras.Sequential()
+
+  input_users_1 = keras.layers.Input(shape=(dim_embeddings,))
+  input_items_1 = keras.layers.Input(shape=(dim_embeddings,))
+
+  x1_user = keras.layers.Dense(256, activation=tf.nn.relu)(input_users_1)
+  x1_2_user = keras.layers.Dense(128, activation=tf.nn.relu)(x1_user)
+  x1_3_user = keras.layers.Dense(64, activation=tf.nn.relu)(x1_2_user)
+
+  x1_item = keras.layers.Dense(256, activation=tf.nn.relu)(input_items_1)
+  x1_2_item = keras.layers.Dense(128, activation=tf.nn.relu)(x1_item)
+  x1_3_item = keras.layers.Dense(64, activation=tf.nn.relu)(x1_2_item)
+
+  input_users_2 = keras.layers.Input(shape=(dim_embeddings,))
+  input_items_2 = keras.layers.Input(shape=(dim_embeddings,))
+
+  x2_user = keras.layers.Dense(256, activation=tf.nn.relu)(input_users_2)
+  x2_2_user = keras.layers.Dense(128, activation=tf.nn.relu)(x2_user)
+  x2_3_user = keras.layers.Dense(64, activation=tf.nn.relu)(x2_2_user)
+
+  x2_item = keras.layers.Dense(256, activation=tf.nn.relu)(input_items_2)
+  x2_2_item = keras.layers.Dense(128, activation=tf.nn.relu)(x2_item)
+  x2_3_item = keras.layers.Dense(64, activation=tf.nn.relu)(x2_2_item)
+
+  # In entity-based: concatenated_1 = keras.layers.Concatenate()([x1_3_user, x2_3_user])
+  concatenated_1 = keras.layers.Concatenate()([x1_3_user, x1_3_item])
+  dense_1 = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_1)
+  dense_1_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense_user)
+
+  # In entity-based: concatenated_2 = keras.layers.Concatenate()([x1_3_item, x2_3_item])
+  concatenated_2 = keras.layers.Concatenate()([x2_3_user, x2_3_item])
+  dense_2 = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_2)
+  dense_2_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense_item)
+
+  concatenated = keras.layers.Concatenate()([dense_1_2, dense_2_2])
+  dense = keras.layers.Dense(32, activation=tf.nn.relu)(concatenated)
+  dense2 = keras.layers.Dense(16, activation=tf.nn.relu)(dense)
+  dense3 = keras.layers.Dense(8, activation=tf.nn.relu)(dense2)
+  out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense3)
+
+  model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
+
+  return model
+
+
 def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, value):
 
   model = keras.Sequential()
@@ -248,7 +297,7 @@ else:
   X, y, dim_embeddings, _, _, _ = matching_graph_bert_ids(users, items, ratings, graph_emb, word_emb)
   
   # training the model
-  recsys_model = model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs=30,batch_size=512, value=0.7)
+  recsys_model = model_feature_based(X,y,dim_embeddings,epochs=30,batch_size=512, value=0.7)
 
   # saving the model
   recsys_model.save(model_path)
