@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from pykeen.triples import TriplesFactory
 from pykeen.pipeline import pipeline
 import pandas as pd

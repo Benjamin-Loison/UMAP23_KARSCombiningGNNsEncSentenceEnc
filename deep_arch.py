@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import pandas as pd
 import csv
 import numpy as np
@@ -326,9 +328,11 @@ else:
   X, y, dim_embeddings, _, _, _ = matching_graph_bert_ids(users, items, ratings, graph_emb, word_emb)
   
   # training the model
-  recsys_model = model_feature_based(X,y,dim_embeddings,epochs=25,batch_size=512)
+  epochs = 25
+  batch_size = 512
+  recsys_model = model_feature_based(X,y,dim_embeddings,epochs,batch_size)
   feature_offset = 0#2
-  #recsys_model = model_single_feature_based(X,y,dim_embeddings,epochs=25,batch_size=512, feature_offset)
+  #recsys_model = model_single_feature_based(X,y,dim_embeddings,epochs,batch_size,feature_offset)
 
   # saving the model
   recsys_model.save(model_path)
