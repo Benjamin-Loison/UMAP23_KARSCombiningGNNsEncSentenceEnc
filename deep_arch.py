@@ -184,12 +184,12 @@ def model_feature_based(X,y,dim_embeddings,epochs,batch_size):
   # In entity-based: concatenated_1 = keras.layers.Concatenate()([x1_3_user, x2_3_user])
   concatenated_1 = keras.layers.Concatenate()([x1_3_user, x1_3_item])
   dense_1 = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_1)
-  dense_1_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense_user)
+  dense_1_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense_1)
 
   # In entity-based: concatenated_2 = keras.layers.Concatenate()([x1_3_item, x2_3_item])
   concatenated_2 = keras.layers.Concatenate()([x2_3_user, x2_3_item])
   dense_2 = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_2)
-  dense_2_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense_item)
+  dense_2_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense_2)
 
   concatenated = keras.layers.Concatenate()([dense_1_2, dense_2_2])
   dense = keras.layers.Dense(32, activation=tf.nn.relu)(concatenated)
@@ -200,6 +200,35 @@ def model_feature_based(X,y,dim_embeddings,epochs,batch_size):
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
   model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
+
+  return model
+
+def model_single_feature_based(X,y,dim_embeddings,epochs,batch_size, feature_offset):
+
+  model = keras.Sequential()
+
+  input_users = keras.layers.Input(shape=(dim_embeddings,))
+  input_items = keras.layers.Input(shape=(dim_embeddings,))
+
+  x_user = keras.layers.Dense(256, activation=tf.nn.relu)(input_users)
+  x_2_user = keras.layers.Dense(128, activation=tf.nn.relu)(x1_user)
+  x_3_user = keras.layers.Dense(64, activation=tf.nn.relu)(x1_2_user)
+
+  x_item = keras.layers.Dense(256, activation=tf.nn.relu)(input_items)
+  x_2_item = keras.layers.Dense(128, activation=tf.nn.relu)(x_item)
+  x_3_item = keras.layers.Dense(64, activation=tf.nn.relu)(x_2_item)
+
+  concatenated = keras.layers.Concatenate()([x_3_user, x_3_item])
+  dense = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated)
+  dense_2 = keras.layers.Dense(32, activation=tf.nn.relu)(dense)
+  dense_3 = keras.layers.Dense(16, activation=tf.nn.relu)(dense_2)
+  dense_4 = keras.layers.Dense(8, activation=tf.nn.relu)(dense_3)
+
+  out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense_4)
+
+  model = keras.models.Model(inputs=[input_users,input_items],outputs=out)
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.fit([X[:,feature_offset + 0],X[:,feature_offset + 1]], y, epochs=epochs, batch_size=batch_size)
 
   return model
 
@@ -298,6 +327,8 @@ else:
   
   # training the model
   recsys_model = model_feature_based(X,y,dim_embeddings,epochs=25,batch_size=512)
+  feature_offset = 0#2
+  #recsys_model = model_single_feature_based(X,y,dim_embeddings,epochs=25,batch_size=512, feature_offset)
 
   # saving the model
   recsys_model.save(model_path)
