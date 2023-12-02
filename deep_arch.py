@@ -8,7 +8,7 @@ import pickle
 import os
 from tensorflow import keras
 
-METRICS = ['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.F1Score()]
+METRICS = [tf.keras.metrics.Precision(), tf.keras.metrics.Recall()]
 OPTIMIZER = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9)
 LOSS = 'binary_crossentropy'
 
@@ -213,8 +213,8 @@ def model_single_feature_based(X,y,dim_embeddings,epochs,batch_size, feature_off
   input_items = keras.layers.Input(shape=(dim_embeddings,))
 
   x_user = keras.layers.Dense(256, activation=tf.nn.relu)(input_users)
-  x_2_user = keras.layers.Dense(128, activation=tf.nn.relu)(x1_user)
-  x_3_user = keras.layers.Dense(64, activation=tf.nn.relu)(x1_2_user)
+  x_2_user = keras.layers.Dense(128, activation=tf.nn.relu)(x_user)
+  x_3_user = keras.layers.Dense(64, activation=tf.nn.relu)(x_2_user)
 
   x_item = keras.layers.Dense(256, activation=tf.nn.relu)(input_items)
   x_2_item = keras.layers.Dense(128, activation=tf.nn.relu)(x_item)
@@ -330,9 +330,9 @@ else:
   # training the model
   epochs = 25
   batch_size = 512
-  recsys_model = model_feature_based(X,y,dim_embeddings,epochs,batch_size)
+  #recsys_model = model_feature_based(X,y,dim_embeddings,epochs,batch_size)
   feature_offset = 0#2
-  #recsys_model = model_single_feature_based(X,y,dim_embeddings,epochs,batch_size,feature_offset)
+  recsys_model = model_single_feature_based(X,y,dim_embeddings,epochs,batch_size,feature_offset)
 
   # saving the model
   recsys_model.save(model_path)
