@@ -235,6 +235,76 @@ def model_single_feature_based(X,y,dim_embeddings,epochs,batch_size, feature_off
   return model
 
 
+def model_entity_based_together_is_better(X,y,dim_embeddings,epochs,batch_size):
+
+  model = keras.Sequential()
+
+  input_users_1 = keras.layers.Input(shape=(dim_embeddings,))
+  input_items_1 = keras.layers.Input(shape=(dim_embeddings,))
+
+  x1_user = keras.layers.Dense(64, activation=tf.nn.relu)(input_users_1)
+
+  x1_item = keras.layers.Dense(64, activation=tf.nn.relu)(input_items_1)
+
+  input_users_2 = keras.layers.Input(shape=(dim_embeddings,))
+  input_items_2 = keras.layers.Input(shape=(dim_embeddings,))
+
+  x2_user = keras.layers.Dense(64, activation=tf.nn.relu)(input_users_2)
+
+  x2_item = keras.layers.Dense(64, activation=tf.nn.relu)(input_items_2)
+
+  concatenated_1 = keras.layers.Concatenate()([x1_user, x2_user])
+  dense_user = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_1)
+
+  concatenated_2 = keras.layers.Concatenate()([x1_item, x2_item])
+  dense_item = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_2)
+
+  concatenated = keras.layers.Concatenate()([dense_user, dense_item])
+  dense = keras.layers.Dense(32, activation=tf.nn.relu)(concatenated)
+  out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense)
+
+  model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
+
+  return model
+
+
+def model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size):
+
+  model = keras.Sequential()
+
+  input_users_1 = keras.layers.Input(shape=(dim_embeddings,))
+  input_items_1 = keras.layers.Input(shape=(dim_embeddings,))
+
+  x1_user = keras.layers.Dense(64, activation=tf.nn.relu)(input_users_1)
+
+  x1_item = keras.layers.Dense(64, activation=tf.nn.relu)(input_items_1)
+
+  input_users_2 = keras.layers.Input(shape=(dim_embeddings,))
+  input_items_2 = keras.layers.Input(shape=(dim_embeddings,))
+
+  x2_user = keras.layers.Dense(64, activation=tf.nn.relu)(input_users_2)
+
+  x2_item = keras.layers.Dense(64, activation=tf.nn.relu)(input_items_2)
+
+  concatenated_1 = keras.layers.Concatenate()([x1_user, x1_item])
+  dense_1 = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_1)
+
+  concatenated_2 = keras.layers.Concatenate()([x2_user, x2_item])
+  dense_2 = keras.layers.Dense(64, activation=tf.nn.relu)(concatenated_2)
+
+  concatenated = keras.layers.Concatenate()([dense_1, dense_2])
+  dense = keras.layers.Dense(32, activation=tf.nn.relu)(concatenated)
+  out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense)
+
+  model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
+
+  return model
+
+
 def model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size, feature_offset):
 
   model = keras.Sequential()
@@ -252,7 +322,7 @@ def model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batc
 
   dense_layer_4 = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense_layer_3)
 
-  model = keras.models.Model(inputs=[input_users,input_items],outputs=out)
+  model = keras.models.Model(inputs=[input_users,input_items],outputs=dense_layer_4)
   model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
   model.fit([X[:,feature_offset + 0],X[:,feature_offset + 1]], y, epochs=epochs, batch_size=batch_size)
 
