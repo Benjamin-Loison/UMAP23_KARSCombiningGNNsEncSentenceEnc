@@ -235,6 +235,30 @@ def model_single_feature_based(X,y,dim_embeddings,epochs,batch_size, feature_off
   return model
 
 
+def model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size, feature_offset):
+
+  model = keras.Sequential()
+
+  input_users = keras.layers.Input(shape=(dim_embeddings,))
+  input_items = keras.layers.Input(shape=(dim_embeddings,))
+
+  # They do not precise whether or not it is a ReLU in these layers.
+  dense_layer_1 = keras.layers.Dense(64, activation=tf.nn.relu)(input_users)
+
+  dense_layer_2 = keras.layers.Dense(64, activation=tf.nn.relu)(input_items)
+
+  concatenated = keras.layers.Concatenate()([dense_layer_1, dense_layer_2])
+  dense_layer_3 = keras.layers.Dense(32, activation=tf.nn.relu)(concatenated)
+
+  dense_layer_4 = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense_layer_3)
+
+  model = keras.models.Model(inputs=[input_users,input_items],outputs=out)
+  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.fit([X[:,feature_offset + 0],X[:,feature_offset + 1]], y, epochs=epochs, batch_size=batch_size)
+
+  return model
+
+
 def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, value):
 
   model = keras.Sequential()
@@ -332,7 +356,7 @@ else:
   batch_size = 512
   #recsys_model = model_feature_based(X,y,dim_embeddings,epochs,batch_size)
   feature_offset = 0#2
-  recsys_model = model_single_feature_based(X,y,dim_embeddings,epochs,batch_size,feature_offset)
+  recsys_model = model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
 
   # saving the model
   recsys_model.save(model_path)
