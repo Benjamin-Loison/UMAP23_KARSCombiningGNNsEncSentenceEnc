@@ -28,8 +28,7 @@ def matching_graph_bert_ids(users, items, ratings, graph_embs, word_embs):
   dim_X_rows = len(users)
 
   X_rows = 0
-  i = 0
-  while i < dim_X_rows:
+  for i in range(dim_X_rows):
 
     user_id = users[i]
     item_id = items[i]
@@ -39,16 +38,13 @@ def matching_graph_bert_ids(users, items, ratings, graph_embs, word_embs):
     if check:
       X_rows += 1
 
-    i += 1
-
   X = np.empty(shape=(X_rows,dim_X_cols,dim_embeddings))
   y = np.empty(shape=(X_rows))
   print("Loading embeddings to be fitted/tested...")
 
-  i=0
   c=0
 
-  while i < dim_X_rows:
+  for i in range(dim_X_rows):
 
     user_id = users[i]
     item_id = items[i]
@@ -74,8 +70,6 @@ def matching_graph_bert_ids(users, items, ratings, graph_embs, word_embs):
       nr.append(ratings[i])
 
       c += 1
-
-    i += 1
 
   return X[0:c], y[0:c], dim_embeddings, nu, ni, nr
 
