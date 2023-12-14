@@ -25,15 +25,18 @@ def matching_graph_bert_ids(users, items, ratings, graph_embs, word_embs):
   dim_embeddings = len(list(graph_embs.values())[0])
 
   dim_X_cols = 4
-  dim_X_rows = len(users)
 
+  def check_user_item_ids(user_id, item_id):
+    return user_id in graph_embs and user_id in word_embs and item_id in graph_embs and item_id in word_embs
+
+  # This code pattern computing actual array size then initialize it, seems to be here just for optimization.
   X_rows = 0
-  for i in range(dim_X_rows):
+  for user_id, item_id in zip(users, items):
 
-    user_id = users[i]
-    item_id = items[i]
+    user_id = int(user_id)
+    item_id = int(item_id)
 
-    check = int(user_id) in graph_embs and int(user_id) in word_embs and int(item_id) in graph_embs and int(item_id) in word_embs
+    check = check_user_item_ids(user_id, item_id)
 
     if check:
       X_rows += 1
@@ -44,19 +47,19 @@ def matching_graph_bert_ids(users, items, ratings, graph_embs, word_embs):
 
   c=0
 
-  for i in range(dim_X_rows):
+  for i, (user_id, item_id) in enumerate(zip(users, items)):
 
-    user_id = users[i]
-    item_id = items[i]
+    user_id = int(user_id)
+    item_id = int(item_id)
 
-    check = int(user_id) in graph_embs and int(user_id) in word_embs and int(item_id) in graph_embs and int(item_id) in word_embs
+    check = check_user_item_ids(user_id, item_id)
 
     if check:
 
-      user_graph_emb = np.array(graph_embs[int(user_id)])
-      user_word_emb = np.array(word_embs[int(user_id)])
-      item_graph_emb = np.array(graph_embs[int(item_id)])
-      item_word_emb = np.array(word_embs[int(item_id)])
+      user_graph_emb = np.array(graph_embs[user_id])
+      user_word_emb = np.array(word_embs[user_id])
+      item_graph_emb = np.array(graph_embs[item_id])
+      item_word_emb = np.array(word_embs[item_id])
 
       X[c][0] = user_graph_emb
       X[c][1] = item_graph_emb
