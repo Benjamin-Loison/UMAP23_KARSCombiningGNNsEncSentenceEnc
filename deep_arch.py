@@ -432,7 +432,7 @@ else:
       modelFunction(*modelFunctionArguments)
 
   modelFunctionArguments = [X,y,dim_embeddings,epochs,batch_size]
-  runModels = [#[[f'single_feature {i}', model_single_feature_based_together_is_better, modelFunctionArguments + [i]] for i in [0, 2]] + [
+  runModels = [
     ['single_feature 0', model_single_feature_based_together_is_better, modelFunctionArguments + [0]],
     ['single_feature 2', model_single_feature_based_together_is_better, modelFunctionArguments + [2]],
     ['feature based', model_feature_based_together_is_better, modelFunctionArguments],
