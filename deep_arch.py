@@ -426,18 +426,17 @@ else:
   feature_offset = 0#2
   #recsys_model = model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
   loopIndex = 0
+  def runModel(loopIndex, modelName, modelFunction, modelFunctionArguments):
+      gc.collect()
+      print(f'{loopIndex} {modelName}')
+      modelFunction(*modelFunctionArguments)
+
   # Assume that `model.fit` does not change its arguments.
   while True:
     for feature_offset in [0, 2]:
-      print(f'{loopIndex} single_feature {feature_offset}')
-      gc.collect()
-      model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
-    print(f'{loopIndex} feature based')
-    gc.collect()
-    model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
-    print(f'{loopIndex} entity based')
-    gc.collect()
-    model_entity_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
+      runModel(loopIndex, f'single_feature {feature_offset}', model_single_feature_based_together_is_better, [X,y,dim_embeddings,epochs,batch_size,feature_offset])
+    runModel(loopIndex, f'feature based', model_feature_based_together_is_better, [X,y,dim_embeddings,epochs,batch_size])
+    runModel(loopIndex, f'entity based', model_entity_based_together_is_better, [X,y,dim_embeddings,epochs,batch_size])
     loopIndex += 1
   recsys_model = model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)#,feature_offset)
 
