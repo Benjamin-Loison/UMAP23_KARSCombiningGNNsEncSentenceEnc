@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 import pickle
 import os
+import gc
 from tensorflow import keras
 
 METRICS = [tf.keras.metrics.Precision(), tf.keras.metrics.Recall()]
@@ -394,7 +395,7 @@ def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, 
 
 dataset = 'movielens'
 source_graph_path = f'{dataset}/{dataset}_CompGCN_k=384.pickle'
-source_text_path = f'{dataset}/{dataset}_all-MiniLM-L12-v1.pickle'
+source_text_path = f'{dataset}/{dataset}_all-MiniLM-L12-v2.pickle'
 model_path = f'{dataset}/model.h5'
 predictions_path = f'{dataset}/predictions'
 
@@ -429,10 +430,13 @@ else:
   while True:
     for feature_offset in [0, 2]:
       print(f'{loopIndex} single_feature {feature_offset}')
+      gc.collect()
       model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
     print(f'{loopIndex} feature based')
+    gc.collect()
     model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
     print(f'{loopIndex} entity based')
+    gc.collect()
     model_entity_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
     loopIndex += 1
   recsys_model = model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)#,feature_offset)
