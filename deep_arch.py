@@ -9,7 +9,8 @@ import os
 from tensorflow import keras
 
 METRICS = [tf.keras.metrics.Precision(), tf.keras.metrics.Recall()]
-OPTIMIZER = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9)
+def getOptimizer():
+    return tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9)
 LOSS = 'binary_crossentropy'
 
 # this function loads data (embeddings) to be trained/test in a unique matrix X
@@ -148,7 +149,7 @@ def model_entity_based(X,y,dim_embeddings,epochs,batch_size):
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense3)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
   
   return model
@@ -197,7 +198,7 @@ def model_feature_based(X,y,dim_embeddings,epochs,batch_size):
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense3)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
 
   return model
@@ -226,7 +227,7 @@ def model_single_feature_based(X,y,dim_embeddings,epochs,batch_size, feature_off
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense_4)
 
   model = keras.models.Model(inputs=[input_users,input_items],outputs=out)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,feature_offset + 0],X[:,feature_offset + 1]], y, epochs=epochs, batch_size=batch_size)
 
   return model
@@ -261,7 +262,7 @@ def model_entity_based_together_is_better(X,y,dim_embeddings,epochs,batch_size):
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
 
   return model
@@ -296,7 +297,7 @@ def model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
 
   return model
@@ -320,7 +321,7 @@ def model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batc
   dense_layer_4 = keras.layers.Dense(1, activation=tf.nn.sigmoid)(dense_layer_3)
 
   model = keras.models.Model(inputs=[input_users,input_items],outputs=dense_layer_4)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,feature_offset + 0],X[:,feature_offset + 1]], y, epochs=epochs, batch_size=batch_size)
 
   return model
@@ -380,7 +381,7 @@ def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, 
   out = keras.layers.Dense(1, activation=tf.nn.sigmoid)(merged5)
 
   model = keras.models.Model(inputs=[input_users_1,input_items_1,input_users_2,input_items_2],outputs=out)
-  model.compile(loss=LOSS, optimizer=OPTIMIZER, metrics=METRICS)
+  model.compile(loss=LOSS, optimizer=getOptimizer(), metrics=METRICS)
   model.fit([X[:,0],X[:,1],X[:,2],X[:,3]], y, epochs=epochs, batch_size=batch_size)
   
   return model
@@ -421,9 +422,20 @@ else:
   # training the model
   epochs = 25
   batch_size = 512
-  #recsys_model = model_feature_based(X,y,dim_embeddings,epochs,batch_size)
   feature_offset = 0#2
-  recsys_model = model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
+  #recsys_model = model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
+  loopIndex = 0
+  # Assume that `model.fit` does not change its arguments.
+  while True:
+    for feature_offset in [0, 2]:
+      print(f'{loopIndex} single_feature {feature_offset}')
+      model_single_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size,feature_offset)
+    print(f'{loopIndex} feature based')
+    model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
+    print(f'{loopIndex} entity based')
+    model_entity_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)
+    loopIndex += 1
+  recsys_model = model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)#,feature_offset)
 
   # saving the model
   recsys_model.save(model_path)
