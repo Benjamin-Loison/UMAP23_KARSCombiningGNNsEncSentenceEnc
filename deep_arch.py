@@ -394,7 +394,7 @@ def model_entity_dropout_selfatt_crossatt(X,y,dim_embeddings,epochs,batch_size, 
 
 dataset = 'movielens'
 source_graph_path = f'{dataset}/{dataset}_CompGCN_k=384.pickle'
-source_text_path = f'{dataset}/{dataset}_sota_minilm-l12-v1.pickle'
+source_text_path = f'{dataset}/{dataset}_all-MiniLM-L12-v1.pickle'
 model_path = f'{dataset}/model.h5'
 predictions_path = f'{dataset}/predictions'
 
