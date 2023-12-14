@@ -431,14 +431,19 @@ else:
       print(f'{loopIndex} {modelName}')
       modelFunction(*modelFunctionArguments)
 
+  modelFunctionArguments = [X,y,dim_embeddings,epochs,batch_size]
+  runModels = [#[[f'single_feature {i}', model_single_feature_based_together_is_better, modelFunctionArguments + [i]] for i in [0, 2]] + [
+    ['single_feature 0', model_single_feature_based_together_is_better, modelFunctionArguments + [0]],
+    ['single_feature 2', model_single_feature_based_together_is_better, modelFunctionArguments + [2]],
+    ['feature based', model_feature_based_together_is_better, modelFunctionArguments],
+    ['entity based', model_entity_based_together_is_better, modelFunctionArguments],
+  ]
   # Assume that `model.fit` does not change its arguments.
   while True:
-    for feature_offset in [0, 2]:
-      runModel(loopIndex, f'single_feature {feature_offset}', model_single_feature_based_together_is_better, [X,y,dim_embeddings,epochs,batch_size,feature_offset])
-    runModel(loopIndex, f'feature based', model_feature_based_together_is_better, [X,y,dim_embeddings,epochs,batch_size])
-    runModel(loopIndex, f'entity based', model_entity_based_together_is_better, [X,y,dim_embeddings,epochs,batch_size])
+    for modelName, modelFunction, modelArguments in runModels:
+        runModel(loopIndex, modelName, modelFunction, modelArguments)
     loopIndex += 1
-  recsys_model = model_feature_based_together_is_better(X,y,dim_embeddings,epochs,batch_size)#,feature_offset)
+  recsys_model = model_feature_based_together_is_better(*modelFunctionArguments)
 
   # saving the model
   recsys_model.save(model_path)
